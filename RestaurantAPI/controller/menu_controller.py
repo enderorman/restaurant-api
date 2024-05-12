@@ -6,31 +6,31 @@ from urllib.parse import urlparse, parse_qs
 class MealController:
     def __init__(self,):
         self.menuService = MenuService(FileService())
-    def listMeals(self, is_vegetarian, is_vegan):
+    def _listMeals(self, is_vegetarian, is_vegan):
         return self.menuService.listMeals(is_vegetarian, is_vegan)
 
-    def getMeal(self, meal_id):
+    def _getMeal(self, meal_id):
         return self.menuService.getMeal(meal_id)
 
-    def calculateQualityScore(self, meal_id, ingredients):
+    def _calculateQualityScore(self, meal_id, ingredients):
         return self.menuService.calculateQualityScore(meal_id, ingredients)
 
-    def calculatePrice(self, meal_id, ingredients):
+    def _calculatePrice(self, meal_id, ingredients):
         return self.menuService.calculatePrice(meal_id, ingredients)
 
-    def selectRandomMeal(self, budget=None):
+    def _selectRandomMeal(self, budget=None):
         return self.menuService.selectRandomMealWithBudget(budget)
 
-    def search(self, text):
+    def _search(self, text):
         return self.menuService.search(text)
 
-    def findHighest(self, budget, is_vegetarian, is_vegan):
+    def _findHighest(self, budget, is_vegetarian, is_vegan):
         return self.menuService.findHighest(budget, is_vegetarian, is_vegan)
 
-    def findHighestOfMeal(self, meal_id, budget):
+    def _findHighestOfMeal(self, meal_id, budget):
         return self.menuService.findHighestOfMeal(meal_id, budget)
 
-    def handle_request(self, request):
+    def _handle_request(self, request):
         parsed_path = urlparse(request.path)
         path = parsed_path.path
         query_params = parse_qs(parsed_path.query)
@@ -124,13 +124,13 @@ class MealController:
                     return self.send_error_response(request, 404, b'No meal found within budget')
 
 
-    def send_json_response(self, request, data):
+    def _send_json_response(self, request, data):
         request.send_response(200)
         request.send_header('Content-type', 'application/json')
         request.end_headers()
         request.wfile.write(json.dumps(data).encode())
 
-    def send_error_response(self, request, status_code, message):
+    def _send_error_response(self, request, status_code, message):
         request.send_response(status_code)
         request.send_header('Content-type', 'text/plain')
         request.end_headers()
