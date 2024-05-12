@@ -55,7 +55,7 @@ class MenuService:
                 return meal
         return None
 
-    def calculateQualityScoreHelper(self, meal_id, ingredients):
+    def calculateQualityScoreForMeal(self, meal_id, ingredients):
         meal = self.getMealByID(meal_id)
         ingredientScores = []
         ingredientDefaults = defaultdict(lambda: "high",
@@ -68,7 +68,7 @@ class MenuService:
         return overall_quality
 
     def calculateQualityScore(self, meal_id, ingredients):
-        overall_quality = self.calculateQualityScoreHelper(meal_id, ingredients)
+        overall_quality = self.calculateQualityScoreForMeal(meal_id, ingredients)
         qualityScore = {
             "quality": overall_quality
         }
@@ -84,7 +84,7 @@ class MenuService:
         else:
             raise ValueError("Invalid quality level")
 
-    def calculatePriceHelper(self, meal_id, ingredients):
+    def calculatePriceForMeal(self, meal_id, ingredients):
         ingredientDefaults = defaultdict(lambda: "high",
                                          {ingredient.lower(): quality for ingredient, quality in ingredients.items()})
         meal = self.getMealByID(meal_id)
@@ -96,7 +96,7 @@ class MenuService:
         return price
 
     def calculatePrice(self, meal_id, ingredients):
-        price = self.calculatePriceHelper(meal_id, ingredients)
+        price = self.calculatePriceForMeal(meal_id, ingredients)
         return {
             "price": price
         }
@@ -150,7 +150,7 @@ class MenuService:
     def getMealInfo(self, meal, ingredients):
         meal_id = meal.id
         name = meal.name
-        price, qualityScore = self.calculatePriceHelper(meal_id, ingredients), self.calculateQualityScoreHelper(meal_id, ingredients)
+        price, qualityScore = self.calculatePriceForMeal(meal_id, ingredients), self.calculateQualityScoreForMeal(meal_id, ingredients)
         ingredientLst = [{"name": ingredientName, "quality":ingredientQuality} for ingredientName, ingredientQuality in
                         ingredients.items()]
         return {
@@ -163,7 +163,7 @@ class MenuService:
 
     def isMealPriceGreaterThanBudget(self, randomMeal, randomIngredients, budget):
         meal_id = randomMeal.id
-        price = self.calculatePriceHelper(meal_id, randomIngredients)
+        price = self.calculatePriceForMeal(meal_id, randomIngredients)
         return price > budget
 
     def selectRandomMeal(self):
@@ -217,7 +217,7 @@ class MenuService:
         highestQualityMealChoice = None
         for choice in mealChoices:
             meal, ingredientChoice = choice
-            quality = self.calculateQualityScoreHelper(meal.id, ingredientChoice)
+            quality = self.calculateQualityScoreForMeal(meal.id, ingredientChoice)
             if quality > maxQuality:
                 highestQualityMealChoice = choice
                 maxQuality = quality
