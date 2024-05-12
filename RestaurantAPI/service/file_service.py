@@ -11,7 +11,7 @@ class FileService:
 
     def loadMenuFromFile(self):
         try:
-            with open('menu.json', 'r') as f:
+            with open('../menu.json', 'r') as f:
                 menu_data = json.load(f)
             return menu_data
         except FileNotFoundError:

@@ -1,6 +1,5 @@
-from menu_service import MenuService
-from file_service import FileService
-from http.server import BaseHTTPRequestHandler
+from service.menu_service import MenuService
+from service.file_service import FileService
 import json
 from urllib.parse import urlparse, parse_qs
 
