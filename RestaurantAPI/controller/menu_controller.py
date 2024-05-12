@@ -1,6 +1,6 @@
 from menu_service import MenuService
 from file_service import FileService
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler
 import json
 from urllib.parse import urlparse, parse_qs
 
@@ -137,17 +137,3 @@ class MealController:
         request.end_headers()
         request.wfile.write(message)
 
-class HTTPRequestHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        controller = MealController()
-        controller.handle_request(self)
-
-    def do_POST(self):
-        controller = MealController()
-        controller.handle_request(self)
-
-if __name__ == '__main__':
-    server_address = ('', 8080)
-    httpd = HTTPServer(server_address, HTTPRequestHandler)
-    print('Server running...')
-    httpd.serve_forever()
