@@ -1,9 +1,6 @@
-import json
 import random
-from meal import Meal
-from ingredient import Ingredient
-from file_service import FileService
 from collections import defaultdict
+from model import Ingredient, Meal
 
 class MealAdapter:
     @staticmethod

@@ -1,6 +1,5 @@
 import json
-from meal import Meal
-from ingredient import Ingredient
+from model import Meal, Ingredient
 
 class FileService:
     def __init__(self):
