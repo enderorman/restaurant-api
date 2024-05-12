@@ -4,7 +4,7 @@ import json
 from urllib.parse import urlparse, parse_qs
 
 class MenuController:
-    def __init__(self,):
+    def __init__(self):
         self.menuService = MenuService(FileService())
     def _listMeals(self, is_vegetarian, is_vegan):
         return self.menuService.listMeals(is_vegetarian, is_vegan)
@@ -39,25 +39,25 @@ class MenuController:
             if path == '/listMeals':
                 is_vegetarian = query_params.get('is_vegetarian', ["false"])[0].lower() == 'true'
                 is_vegan = query_params.get('is_vegan', ["false"])[0].lower() == 'true'
-                meals = self.listMeals(is_vegetarian, is_vegan)
-                return self.send_json_response(request, meals)
+                meals = self._listMeals(is_vegetarian, is_vegan)
+                return self._send_json_response(request, meals)
             elif path == '/getMeal':
                 meal_id = int(query_params.get('id', [None])[0])
-                meal = self.menuService.getMealByID(meal_id)
+                meal = self.menuService._getMealByID(meal_id)
                 if meal:
-                    return self.send_json_response(request, meal)
+                    return self._send_json_response(request, meal)
                 else:
-                    return self.send_error_response(request, 404, b'Meal not found.')
+                    return self._send_error_response(request, 404, b'Meal not found.')
             elif path == '/search':
                 text = query_params.get('query', [None])[0]
                 if text is not None:
-                    searchResult = self.search(text)
+                    searchResult = self._search(text)
                     if searchResult is not None:
-                        return self.send_json_response(request, searchResult)
+                        return self._send_json_response(request, searchResult)
                     else:
-                        return self.send_error_response(request, 404, b'Search text not found.')
+                        return self._send_error_response(request, 404, b'Search text not found.')
                 else:
-                    return self.send_error_response(request, 400, b'Search text is required.')
+                    return self._send_error_response(request, 400, b'Search text is required.')
 
 
         elif request.command == 'POST':
@@ -67,61 +67,61 @@ class MenuController:
             if path == '/quality':
                 meal_id = post_params.get('meal_id', [None])[0]
                 if meal_id is None:
-                    return self.send_error_response(request, 400, b'Meal ID is required.')
+                    return self._send_error_response(request, 400, b'Meal ID is required.')
                 ingredient_qualities = {param_name: param_value[0] for param_name, param_value in post_params.items() if param_name != 'meal_id'}
                 meal_id = int(meal_id)
-                meal = self.menuService.getMealByID(meal_id)
+                meal = self.menuService._getMealByID(meal_id)
                 if meal is not None:
-                    quality_result = self.calculateQualityScore(meal_id, ingredient_qualities)
-                    return self.send_json_response(request, quality_result)
+                    quality_result = self._calculateQualityScore(meal_id, ingredient_qualities)
+                    return self._send_json_response(request, quality_result)
                 else:
-                    return self.send_error_response(request, 404, b'Meal not found.')
+                    return self._send_error_response(request, 404, b'Meal not found.')
             elif path == "/price":
                 meal_id = post_params.get('meal_id', [None])[0]
                 if meal_id is None:
-                    return self.send_error_response(request, 400, b'Meal ID is required.')
+                    return self._send_error_response(request, 400, b'Meal ID is required.')
                 ingredient_qualities = {param_name: param_value[0] for param_name, param_value in post_params.items() if
                                         param_name != 'meal_id'}
                 meal_id = int(meal_id)
-                meal = self.menuService.getMealByID(meal_id)
+                meal = self.menuService._getMealByID(meal_id)
                 if meal is not None:
-                    price_result = self.calculatePrice(meal_id, ingredient_qualities)
-                    return self.send_json_response(request, price_result)
+                    price_result = self._calculatePrice(meal_id, ingredient_qualities)
+                    return self._send_json_response(request, price_result)
                 else:
-                    return self.send_error_response(request, 400, b'Meal not found.')
+                    return self._send_error_response(request, 400, b'Meal not found.')
             elif path == '/random':
                 budget = int(post_params.get('budget', [None])[0])
-                random_meal = self.selectRandomMeal(budget)
+                random_meal = self._selectRandomMeal(budget)
                 if random_meal:
-                    return self.send_json_response(request, random_meal)
+                    return self._send_json_response(request, random_meal)
                 else:
-                    return self.send_error_response(request, 404, b'No meal found within budget.')
+                    return self._send_error_response(request, 404, b'No meal found within budget.')
             elif path == '/findHighest':
                 budget =  post_params.get('budget', [None])[0]
                 if budget is None:
-                    return self.send_error_response(request, 400, b'Budget is required.')
+                    return self._send_error_response(request, 400, b'Budget is required.')
                 budget = float(budget)
                 is_vegetarian = post_params.get('is_vegetarian', ["false"])[0].lower() == 'true'
                 is_vegan = post_params.get('is_vegan', ["false"])[0].lower() == 'true'
-                highestQualityMeal = self.findHighest(budget, is_vegetarian, is_vegan)
+                highestQualityMeal = self._findHighest(budget, is_vegetarian, is_vegan)
                 if highestQualityMeal is not None:
-                    return self.send_json_response(request, highestQualityMeal)
+                    return self._send_json_response(request, highestQualityMeal)
                 else:
-                    return self.send_error_response(request, 404, b'No meal found within budget.')
+                    return self._send_error_response(request, 404, b'No meal found within budget.')
             elif path == '/findHighestOfMeal':
                 meal_id = post_params.get('meal_id', [None])[0]
                 budget = post_params.get('budget', [None])[0]
                 if meal_id is None:
-                    return self.send_error_response(request, 400, b'Meal ID is required.')
+                    return self._send_error_response(request, 400, b'Meal ID is required.')
                 if budget is None:
-                    return self.send_error_response(request, 400, b'Budget is required.')
+                    return self._send_error_response(request, 400, b'Budget is required.')
                 meal_id = int(meal_id)
                 budget = float(budget)
-                highestQualityOfMeal = self.findHighestOfMeal(meal_id, budget)
+                highestQualityOfMeal = self._findHighestOfMeal(meal_id, budget)
                 if highestQualityOfMeal is not None:
-                    return self.send_json_response(request, highestQualityOfMeal)
+                    return self._send_json_response(request, highestQualityOfMeal)
                 else:
-                    return self.send_error_response(request, 404, b'No meal found within budget')
+                    return self._send_error_response(request, 404, b'No meal found within budget')
 
 
     def _send_json_response(self, request, data):
