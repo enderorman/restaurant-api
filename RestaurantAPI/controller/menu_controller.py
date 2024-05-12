@@ -4,8 +4,8 @@ import json
 from urllib.parse import urlparse, parse_qs
 
 class MenuController:
-    def __init__(self):
-        self.menuService = MenuService(FileService())
+    def __init__(self, file_path):
+        self.menuService = MenuService(FileService(file_path))
     def _listMeals(self, is_vegetarian, is_vegan):
         return self.menuService.listMeals(is_vegetarian, is_vegan)
 
