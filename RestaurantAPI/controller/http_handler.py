@@ -1,10 +1,9 @@
 from http.server import BaseHTTPRequestHandler
+from controller import MenuController
 class HTTPRequestHandler(BaseHTTPRequestHandler):
-    def __init__(self, MenuController):
-        self.controller = MenuController
-
     def do_GET(self):
-        self.controller.handle_request(self)
-
+        menuController = MenuController()
+        menuController.handle_request(self)
     def do_POST(self):
-        self.controller.handle_request(self)
+        menuController = MenuController()
+        menuController.handle_request(self)

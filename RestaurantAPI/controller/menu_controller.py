@@ -1,9 +1,9 @@
-from service.menu_service import MenuService
-from service.file_service import FileService
+from service import MenuService
+from service import FileService
 import json
 from urllib.parse import urlparse, parse_qs
 
-class MealController:
+class MenuController:
     def __init__(self,):
         self.menuService = MenuService(FileService())
     def _listMeals(self, is_vegetarian, is_vegan):
@@ -30,7 +30,7 @@ class MealController:
     def _findHighestOfMeal(self, meal_id, budget):
         return self.menuService.findHighestOfMeal(meal_id, budget)
 
-    def _handle_request(self, request):
+    def handle_request(self, request):
         parsed_path = urlparse(request.path)
         path = parsed_path.path
         query_params = parse_qs(parsed_path.query)
