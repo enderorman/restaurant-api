@@ -59,7 +59,6 @@ class MenuController:
                 else:
                     return self._send_error_response(request, 400, b'Search text is required.')
 
-
         elif request.command == 'POST':
             content_length = int(request.headers['Content-Length'])
             post_data = request.rfile.read(content_length)

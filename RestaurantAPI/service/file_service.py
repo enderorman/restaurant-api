@@ -10,7 +10,6 @@ class FileService:
         self._populateIngredientList()
 
     def _loadMenuFromFile(self, file_path):
-        print(file_path)
         try:
             with open(file_path, 'r') as f:
                 menu_data = json.load(f)

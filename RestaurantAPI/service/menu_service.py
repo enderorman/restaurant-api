@@ -26,7 +26,7 @@ class MenuService:
         for ingredientData in meal.ingredients:
             ingredientName = ingredientData.get('name')
             ingredient = self._getIngredientNameGiven(ingredientName)
-            if not (not is_vegetarian or self._isIngredientVegetarian(ingredient)) and (not is_vegan or self._isIngredientVegan(ingredient)):
+            if not ((not is_vegetarian or self._isIngredientVegetarian(ingredient)) and (not is_vegan or self._isIngredientVegan(ingredient))):
                 return False
         return True
 
@@ -44,7 +44,7 @@ class MenuService:
 
     def getMeal(self, mealID):
         meal = self._getMealByID(mealID)
-        return MealAdapter.to_dict(meal)
+        return MealAdapter.to_dict(meal) if meal is not None else None
 
     def _getMealByID(self, mealID):
         for meal in self.mealList:
@@ -62,7 +62,7 @@ class MenuService:
             ingredientScore = self._getIngredientQuality(ingredientDefaults[ingredientName])
             ingredientScores.append(ingredientScore)
         overall_quality = sum(ingredientScores) / len(ingredientScores)
-        return overall_quality
+        return round(overall_quality, 2)
 
     def calculateQualityScore(self, meal_id, ingredients):
         overall_quality = self._calculateQualityScoreForMeal(meal_id, ingredients)
@@ -90,7 +90,7 @@ class MenuService:
             ingredientName = ingredientData.get('name').lower()
             ingredient, quality = self._getIngredientNameGiven(ingredientName), ingredientDefaults[ingredientName]
             price += self._calculateIngredientPriceForMeal(meal, ingredient, quality)
-        return price
+        return round(price, 2)
 
     def calculatePrice(self, meal_id, ingredients):
         price = self._calculatePriceForMeal(meal_id, ingredients)
@@ -110,10 +110,16 @@ class MenuService:
         extraCost = self._calculateExtraCost(quality)
         quantity, quantity_type = self._getIngredientQuantityInfoForMeal(meal, ingredient)
         price_per_amount, per_amount = self._getIngredientInfoGivenQuality(ingredient, quality)
-        if quantity_type == 'gram':
-            return (price_per_amount * quantity) / 1000 + extraCost
-        elif quantity_type == 'millilitre':
-            return (price_per_amount * quantity) / 1000 + extraCost
+        if quantity_type == 'gram' and per_amount == 'kilogram':
+            quantity /= 1000
+        elif quantity_type == 'kilogram' and per_amount == 'gram':
+            quantity *= 1000
+        elif quantity_type == 'millilitre' and per_amount == 'litre':
+            quantity /= 1000
+        elif quantity_type == 'litre' and per_amount == 'millilitre':
+            quantity *= 1000
+        cost = (quantity * price_per_amount) + extraCost
+        return round(cost, 2)
 
     def _getIngredientInfoGivenQuality(self, ingredient, quality):
         for option in ingredient.options:
@@ -133,16 +139,14 @@ class MenuService:
 
 
     def selectRandomMealWithBudget(self, budget=None):
-        if budget == None:
-            randomMeal = self._selectRandomMeal()
-            randomIngredients = self._generateIngredientsWithRandomQualities(randomMeal.ingredients)
-            return self._getMealInfo(randomMeal, randomIngredients)
-        randomMeal = self._selectRandomMeal()
-        randomIngredients = self._generateIngredientsWithRandomQualities(randomMeal.ingredients)
-        while self._isMealPriceGreaterThanBudget(randomMeal, randomIngredients, budget):
-            randomMeal = self._selectRandomMeal()
-            randomIngredients = self._generateIngredientsWithRandomQualities(randomMeal.ingredients)
-        return self._getMealInfo(randomMeal, randomIngredients)
+        mealChoices = []
+        for meal in self.mealList:
+            self._generateMealsBelowBudget(meal, {}, 0, 0, mealChoices, budget)
+        if not len(mealChoices):
+            return None
+        randomChoice = random.choice(mealChoices)
+        meal, ingredientChoice = randomChoice
+        return self._getMealInfo(meal, ingredientChoice)
 
     def _getMealInfo(self, meal, ingredients):
         meal_id = meal.id
@@ -178,23 +182,24 @@ class MenuService:
         return randomQualityIngredients
 
     def search(self, text):
+        res = []
         for meal in self.mealList:
             mealName = meal.name.lower()
             if text.lower() in mealName:
-                return MealAdapter.to_dict(meal)
-        return None
+                res.append(MealAdapter.to_dict(meal))
+        return res
 
     def findHighest(self, budget, is_vegetarian, is_vegan):
         mealChoices = []
         for meal in self.mealList:
-            self._generateMealsBelowBudget(meal, {}, budget, 0, 0, mealChoices, is_vegetarian, is_vegan)
+            self._generateMealsBelowBudget(meal, {}, 0, 0, mealChoices, budget, is_vegetarian, is_vegan)
         if not len(mealChoices):
             return None
         highestQualityMealChoice = self._getHighestQualityMealFromMealChoices(mealChoices)
         meal, ingredientChoice = highestQualityMealChoice
         return self._getMealInfo(meal, ingredientChoice)
 
-    def _generateMealsBelowBudget(self, meal, ingredientChoice, budget, cost, index, mealChoices, is_vegetarian=False, is_vegan=False):
+    def _generateMealsBelowBudget(self, meal, ingredientChoice, cost, index, mealChoices, budget=None, is_vegetarian=False, is_vegan=False):
         qualities = ["low", "medium", "high"]
         ingredients = meal.ingredients
         if cost > budget or not self._filterMeal(meal, is_vegetarian, is_vegan):
@@ -207,7 +212,7 @@ class MenuService:
             ingredient = self._getIngredientNameGiven(ingredientName)
             ingredientChoice[ingredientName] = quality
             cost += self._calculateIngredientPriceForMeal(meal, ingredient, quality)
-            self._generateMealsBelowBudget(meal, ingredientChoice.copy(), budget, cost, index + 1, mealChoices, is_vegetarian, is_vegan)
+            self._generateMealsBelowBudget(meal, ingredientChoice.copy(), cost, index + 1, mealChoices, budget, is_vegetarian, is_vegan)
 
     def _getHighestQualityMealFromMealChoices(self, mealChoices):
         maxQuality = 0
@@ -223,7 +228,7 @@ class MenuService:
     def findHighestOfMeal(self, meal_id, budget):
         mealChoices = []
         meal = self._getMealByID(meal_id)
-        self._generateMealsBelowBudget(meal, {}, budget, 0, 0, mealChoices)
+        self._generateMealsBelowBudget(meal, {}, 0, 0, mealChoices, budget)
         if not len(mealChoices):
             return None
         highestQualityChoice = self._getHighestQualityMealFromMealChoices(mealChoices)
