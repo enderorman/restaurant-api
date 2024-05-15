@@ -4,7 +4,7 @@ from service import MenuService, FileService
 class TestMenuService(unittest.TestCase):
     def setUp(self):
         #Specify file path as desired.
-        file_path = "menu.json"
+        file_path = "resources/menu.json"
         self.menuService = MenuService(FileService(file_path))
     def testListMeals(self):
         params = [[False, False],
